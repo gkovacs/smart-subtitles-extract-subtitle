@@ -396,6 +396,17 @@ def blackenOutsideHorizontalRegion(origimg, hstart, hlength):
       img[y,x] = (0,0,0)
   return img
 
+def imgDifference(img1, img2):
+  diff = 0
+  for y,x in iterImg(img1):
+    if sum([abs(img1[y,x][i] - img2[y,x][i]) for i in [0,1,2]]) > 100:
+      diff += 1
+  return float(diff) / (img1.width * img2.height)
+
+def haveTransition(img1, img2):
+  diff = imgDifference(img1, img2)
+  return diff > 0.03
+
 '''
 def getSubtitleHeight(videofile):
   num_counted = 0
@@ -432,6 +443,7 @@ def main():
   subtitle_color = getSubtitleColor(vidf)
   best_portion = getBestPortion(vidf)
   vstart,vend = getVideoSubtitleVerticalStartEnd(vidf)
+  curImg = None
   for idx,img in iterVideo(vidf):
     img = getBottomQuarter(img)
     #extracted_color_img = extractColor(img, subtitle_color)
@@ -442,7 +454,9 @@ def main():
     hstart,hend = getHorizontalStartEnd(horizontalActivation)
     #nimg = extractHorizontal(vertical_extracted_color_img, hstart, hend-hstart)
     nimg = blackenOutsideHorizontalRegion(vertical_extracted_color_img, hstart, hend-hstart)
-    SaveImage(str(idx)+'.png', nimg)
+    if curImg == None or haveTransition(curImg, nimg):
+      SaveImage(str(idx)+'.png', nimg)
+      curImg = nimg
   return
   subtitle_color = getSubtitleColor(vidf)
   best_portion = getBestPortion(vidf)
