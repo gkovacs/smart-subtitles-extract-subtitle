@@ -6,6 +6,7 @@ from cv import *
 import collections
 import functools
 import itertools
+import json
 
 activation_threshold = 0.5
 import sys
@@ -436,13 +437,31 @@ def getSubtitleStartEndTimes(videofile):
     print best_portion
 '''
 
+def getMetadata(vidf):
+  try:
+    metadata = json.load(open(vidf+'.json'))
+    return metadata
+  except:
+    subtitle_color = getSubtitleColor(vidf)
+    best_portion = getBestPortion(vidf)
+    vstart,vend = getVideoSubtitleVerticalStartEnd(vidf)
+    metadata = {}
+    metadata['subtitle_color'] = subtitle_color
+    metadata['best_portion'] = best_portion
+    metadata['vstart'] = vstart
+    metadata['vend'] = vend
+    open(vidf+'.json', 'w').write(json.dumps(metadata))
+    return metadata
+
 def main():
   vidf = 'video.m4v'
   if len(sys.argv) > 1:
     vidf = sys.argv[1]
-  subtitle_color = getSubtitleColor(vidf)
-  best_portion = getBestPortion(vidf)
-  vstart,vend = getVideoSubtitleVerticalStartEnd(vidf)
+  metadata = getMetadata(vidf)
+  subtitle_color = metadata['subtitle_color']
+  best_portion = metadata['best_portion']
+  vstart = metadata['vstart']
+  vend = metadata['vend']
   curImg = None
   for idx,img in iterVideo(vidf):
     img = getBottomQuarter(img)
