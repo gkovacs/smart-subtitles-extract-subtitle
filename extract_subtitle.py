@@ -158,6 +158,7 @@ def iterImgSurrounding4(img):
         coords.append(closestPoint(img, (y+dy,x+dx)))
     yield tuple([mid] + coords)
 '''
+
 def iterImgSurrounding5(img):
   for y,x in iterImg(img):
     mid = y,x
