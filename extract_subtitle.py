@@ -7,9 +7,13 @@ import collections
 import functools
 import itertools
 import json
+from UnionFind import UnionFind
+import random
+import sys
+
+from connected_components import *
 
 activation_threshold = 0.5
-import sys
 
 class memoized(object):
   '''Decorator. Caches a function's return value each time it is called.
@@ -467,12 +471,16 @@ def main():
     img = getBottomQuarter(img)
     #extracted_color_img = extractColor(img, subtitle_color)
     extracted_color_img = extractColor(img, subtitle_color)
-    vertical_extracted_color_img = extractVertical(extracted_color_img, vstart, vend-vstart)
+    #connected_components = connectedComponentLabel(extracted_color_img)
+    #blacklisted_components = findComponentsSpanningOutsideRange(connected_components, vstart-5, vend+5)
+    #blackenBlacklistedComponents(extracted_color_img, connected_components, blacklisted_components)
+    connectedComponentOutsidePermittedRegionBlacken(extracted_color_img, vstart-5, vend+5)
+    vertical_extracted_color_img = extractVertical(extracted_color_img, vstart-5, vend-vstart+5)
     harris = getHarris(vertical_extracted_color_img)
     horizontalActivation = getHorizontalActivationWithHarris(vertical_extracted_color_img, harris)
     hstart,hend = getHorizontalStartEnd(horizontalActivation)
     #nimg = extractHorizontal(vertical_extracted_color_img, hstart, hend-hstart)
-    nimg = blackenOutsideHorizontalRegion(vertical_extracted_color_img, hstart, hend-hstart)
+    nimg = blackenOutsideHorizontalRegion(vertical_extracted_color_img, hstart-5, hend-hstart+5)
     if curImg == None or haveTransition(curImg, nimg):
       SaveImage(str(idx)+'.png', nimg)
       curImg = nimg
