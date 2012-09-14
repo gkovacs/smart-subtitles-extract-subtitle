@@ -101,6 +101,13 @@ def closestPoint(img, point):
     x = 0
   return y,x
 
+def getSurrounding1(img, y, x):
+  left = closestPoint(img, (y,x-1))
+  right = closestPoint(img, (y,x-1))
+  up = closestPoint(img, (y+1,x))
+  down = closestPoint(img, (y-1,x))
+  return left,right,up,down
+
 def iterImgSurrounding1(img):
   for y,x in iterImg(img):
     mid = y,x

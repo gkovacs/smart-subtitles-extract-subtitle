@@ -2,24 +2,34 @@
 
 import cv
 from cv import *
-from extract_subtitle import *
+from connected_components import *
 from UnionFind import UnionFind
 import random
-from connected_components import *
 
 def main():
+  '''
   vidf = 'video.m4v'
   if len(sys.argv) > 1:
     vidf = sys.argv[1]
   frameno = 0
   if len(sys.argv) > 2:
     frameno = int(sys.argv[2])
-  metadata = getMetadata(vidf)
+  '''
+  metadata = getMetadata('zhjdasn-part2.m4v')
   subtitle_color = metadata['subtitle_color']
   best_portion = metadata['best_portion']
   vstart = metadata['vstart']
   vend = metadata['vend']
   curImg = None
+  img = LoadImage('testdata/zhjdasn-extractframe250.png')
+  extracted_color_img = extractColor(img, subtitle_color)
+  nimg = extracted_color_img
+  connectedComponentOutsidePermittedRegionBlacken(extracted_color_img, vstart-5, vend+5)
+  #connected_components = connectedComponentLabel(extracted_color_img)
+  #blacklist = findComponentsSpanningOutsideRange(connected_components, vstart-5, vend+5)
+  #blackenBlacklistedComponents(nimg, connected_components, blacklist)
+  SaveImage('extractframe250.png', nimg)
+  """
   for idx,img in iterVideo(vidf):
     if idx != frameno:
       continue
@@ -42,6 +52,7 @@ def main():
     '''
     nimg = extracted_color_img
     SaveImage('extractframe' + str(idx)+'.png', nimg)
+  """
 
 if __name__ == '__main__':
   main()

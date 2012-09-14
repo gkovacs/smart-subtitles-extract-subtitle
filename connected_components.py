@@ -39,20 +39,19 @@ def connectedComponentLabel(img):
     if len(labeled_white_neighbors) == 0: # assign new label
       z = labels[currentPoint]
     else:
-      for neighbor in labeled_white_neighbors:
-        labels.union(neighbor, currentPoint)
-      '''
       label = labels[labeled_white_neighbors[0]]
       labels.union(label, currentPoint)
       for neighbor in labeled_white_neighbors[1:]:
         labels.union(label, neighbor)
-      '''
   # pass 2
   set_num = 1
   set_to_num = {}
   outimg = CreateImage((img.width, img.height), 8, 3)
   for currentPoint in iterImg(img):
     y,x = currentPoint
+    if sum(img[y,x]) <= 100: # black
+      outimg[y,x] = (0,0,0)
+      continue
     if currentPoint in labels:
       curset = labels[currentPoint]
       #print curset
@@ -100,23 +99,19 @@ def connectedComponentOutsidePermittedRegionBlacken(img, vstart, vend):
   labels = UnionFind()
   # pass 1
   blacklist = set()
-  for surroundingPoints in iterImgSurrounding1(img):
-    currentPoint = surroundingPoints[0]
+  for currentPoint in iterImg(img):
     y,x = currentPoint
     if sum(img[y,x]) <= 100: # black
       continue
-    neighbors = surroundingPoints[1:]
+    neighbors = getSurrounding1(img, y, x)
     # if all 4 neighbors are black or unlabeled (ie, 0 labeled white neighbors), assign new label
     # if only 1 neighbor is white, assign its label to current point
     # if more than 1 of the neighbors are white, assign one of their labels to the current point, and note equivalence
-    white_neighbors = []
     labeled_white_neighbors = []
     for neighbor in neighbors:
       ny,nx = neighbor
-      if sum(img[ny,nx]) > 100: # white neighbor
-        white_neighbors.append(neighbor)
-        if neighbor in labels: # labeled
-          labeled_white_neighbors.append(neighbor)
+      if sum(img[ny,nx]) > 100 and neighbor in labels: # white neighbor
+        labeled_white_neighbors.append(neighbor)
     if len(labeled_white_neighbors) == 0: # assign new label
       z = labels[currentPoint]
       if y < vstart or y > vend:
@@ -131,8 +126,9 @@ def connectedComponentOutsidePermittedRegionBlacken(img, vstart, vend):
   # pass 2
   for currentPoint in iterImg(img):
     y,x = currentPoint
-    if currentPoint in labels:
-      curset = labels[currentPoint]
-      if curset in blacklist:
-        img[y,x] = (0,0,0)
+    if sum(img[y,x]) <= 100: # black
+      continue
+    curset = labels[currentPoint]
+    if curset in blacklist:
+      img[y,x] = (0,0,0)
 
