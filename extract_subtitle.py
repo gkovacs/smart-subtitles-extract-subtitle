@@ -465,6 +465,47 @@ def getMetadata(vidf):
     open(vidf+'.json', 'w').write(json.dumps(metadata))
     return metadata
 
+def whitenAll(curseq):
+  img = CreateImage((curseq[0].width, curseq[0].height), 8, 3)
+  for y,x in iterImg(img):
+    img[y,x] = (0,0,0)
+  for nimg in curseq:
+    for y,x in iterImg(nimg):
+      if sum(nimg[y,x]) > 100:
+        img[y,x] = (255, 255, 255)
+  return img
+
+def halfVoteImages(curseq):
+  img = CreateImage((curseq[0].width, curseq[0].height), 8, 3)
+  min_votes = len(curseq)/2
+  if min_votes == 0:
+    min_votes += 1
+  for y,x in iterImg(img):
+    img[y,x] = (0,0,0)
+    num_votes = 0
+    for nimg in curseq:
+      if sum(nimg[y,x]) > 100:
+        num_votes += 1
+    if num_votes >= min_votes:
+      img[y,x] = (255,255,255)
+  return img
+
+def averageImages(curseq):
+  img = CreateImage((curseq[0].width, curseq[0].height), 8, 3)
+  lencurseq = float(len(curseq))
+  for y,x in iterImg(img):
+    num_votes = 0
+    for nimg in curseq:
+      if sum(nimg[y,x]) > 100:
+        num_votes += 1
+    ratio = num_votes / lencurseq
+    img[y,x] = (255*ratio,255*ratio,255*ratio)
+  return img
+
+def invertImage(img):
+  for y,x in iterImg(img):
+    img[y,x] = tuple([255-v for v in img[y,x]])
+
 def main():
   vidf = 'video.m4v'
   if len(sys.argv) > 1:
@@ -475,7 +516,10 @@ def main():
   vstart = metadata['vstart']
   vend = metadata['vend']
   curImg = None
+  curseq = []
   for idx,img in iterVideo(vidf):
+    if idx % 10 != 0:
+      continue
     img = getBottomQuarter(img)
     #extracted_color_img = extractColor(img, subtitle_color)
     extracted_color_img = extractColor(img, subtitle_color)
@@ -489,9 +533,13 @@ def main():
     hstart,hend = getHorizontalStartEnd(horizontalActivation)
     #nimg = extractHorizontal(vertical_extracted_color_img, hstart, hend-hstart)
     nimg = blackenOutsideHorizontalRegion(vertical_extracted_color_img, hstart-5, hend-hstart+5)
-    if curImg == None or haveTransition(curImg, nimg):
-      SaveImage(str(idx)+'.png', nimg)
-      curImg = nimg
+    if len(curseq) > 0 and haveTransition(curImg, nimg):
+      combined_img = averageImages(curseq)
+      invertImage(combined_img)
+      SaveImage(str(idx)+'.png', combined_img)
+      curseq = []
+    curImg = nimg
+    curseq.append(nimg)
   return
   subtitle_color = getSubtitleColor(vidf)
   best_portion = getBestPortion(vidf)
