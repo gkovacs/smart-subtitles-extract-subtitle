@@ -46,11 +46,11 @@ def reducedColor(rgb):
 
 def colorMatch(color1, color2):
   abs_diff_sum = sum([abs(c1-c2) for c1,c2 in zip(color1,color2)])
-  return (abs_diff_sum < 120)
+  return (abs_diff_sum < 100)
 
 def roughColorMatch(color1, color2):
   abs_diff_sum = sum([abs(c1-c2) for c1,c2 in zip(color1,color2)])
-  return (abs_diff_sum < 200)
+  return (abs_diff_sum < 150)
 
 #def greatlyReducedColor(rgb):
 #S  return tuple([round(x/50.0)*50.0 for x in rgb])
@@ -193,6 +193,14 @@ def rowSum(img, rownum):
 
 def colSum(img, colnum):
   return sum([img[y,colnum] for y in range(img.height)])
+
+def toEqualizedHistGrayscale(img):
+  yuv = CreateImage(GetSize(img), 8, 3)
+  gray = CreateImage(GetSize(img), 8, 1)
+  CvtColor(img, yuv, CV_BGR2YCrCb)
+  Split(yuv, gray, None, None, None)
+  EqualizeHist(gray, gray)
+  return gray
 
 
 num_portions = 16
@@ -536,7 +544,7 @@ def main():
     if len(curseq) > 0 and haveTransition(curImg, nimg):
       combined_img = averageImages(curseq)
       invertImage(combined_img)
-      SaveImage(str(idx)+'.png', combined_img)
+      SaveImage(str(idx)+'.png', toEqualizedHistGrayscale(combined_img))
       curseq = []
     curImg = nimg
     curseq.append(nimg)

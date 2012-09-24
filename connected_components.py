@@ -119,3 +119,5 @@ def connectedComponentOutsidePermittedRegionBlacken(img, vstart, vend):
     if curset in blacklist:
       img[y,x] = (0,0,0)
 
+
+
